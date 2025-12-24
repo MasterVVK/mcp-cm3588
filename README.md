@@ -1,17 +1,19 @@
+🌐 **English** | [Русский](README_ru.md) | [中文](README_zh.md)
+
 # MCP Server for CM3588 NAS Kit
 
-MCP сервер для работы с CM3588 NAS Kit - семантическая база знаний, логирование изменений, live-статус устройства.
+MCP server for CM3588 NAS Kit - semantic knowledge base, change logging, live device status.
 
-## Архитектура
+## Architecture
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│  Локальный компьютер                                           │
+│  Local Machine                                                  │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  Claude Code + MCP Server                                 │  │
-│  │  ├── База знаний (Qdrant) - семантический поиск          │  │
-│  │  ├── Changelog - история изменений                        │  │
-│  │  ├── SSH клиент → live-статус CM3588                     │  │
+│  │  ├── Knowledge Base (Qdrant) - semantic search           │  │
+│  │  ├── Changelog - change history                           │  │
+│  │  ├── SSH client → CM3588 live status                     │  │
 │  │  └── MCP Tools/Resources/Prompts                          │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                          │                                      │
@@ -21,21 +23,21 @@ MCP сервер для работы с CM3588 NAS Kit - семантическ�
 ┌────────────────────────────────────────────────────────────────┐
 │  CM3588 NAS Kit (192.168.1.173)                                │
 │  ├── RK3588 (NPU 6 TOPS)                                       │
-│  ├── Wyoming/Whisper/Piper сервисы                             │
-│  └── Микрофон, камеры, GPIO                                    │
+│  ├── Wyoming/Whisper/Piper services                            │
+│  └── Microphone, cameras, GPIO                                 │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-## Установка
+## Installation
 
-### 1. Зависимости
+### 1. Dependencies
 
 ```bash
-# Создать виртуальное окружение
+# Create virtual environment
 python -m venv .venv
 source .venv/bin/activate
 
-# Установить зависимости
+# Install dependencies
 pip install -e .
 ```
 
@@ -45,159 +47,163 @@ pip install -e .
 docker-compose up -d
 ```
 
-### 3. Конфигурация
+### 3. Configuration
 
 ```bash
 cp .env.example .env
 ```
 
-Настроить в `.env`:
-- `CM3588_HOST` - IP адрес CM3588 (192.168.1.173)
-- `CM3588_USER` - пользователь SSH (root)
-- `CM3588_SSH_KEY` - путь к SSH ключу (~/.ssh/id_ed25519)
+Configure in `.env`:
+- `CM3588_HOST` - CM3588 IP address (192.168.1.173)
+- `CM3588_USER` - SSH user (root)
+- `CM3588_SSH_KEY` - path to SSH key (~/.ssh/id_ed25519)
 - `QDRANT_HOST`, `QDRANT_PORT` - Qdrant (localhost:6333)
 
-### 4. SSH ключ
+### 4. SSH Key
 
 ```bash
 ssh-copy-id -i ~/.ssh/id_ed25519.pub root@192.168.1.173
 ```
 
-## Подключение к Claude Code
+## Connect to Claude Code
 
-Создать `.mcp.json` в корне проекта или в папке где работаете:
+Create `.mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "cm3588": {
-      "command": "/home/user/mcp-cm3588/.venv/bin/python",
+      "command": "/path/to/mcp-cm3588/.venv/bin/python",
       "args": ["-m", "mcp_cm3588.server"],
-      "cwd": "/home/user/mcp-cm3588"
+      "cwd": "/path/to/mcp-cm3588"
     }
   }
 }
 ```
 
-Перезапустить Claude Code или выполнить `/mcp restart cm3588`.
+Restart Claude Code or run `/mcp restart cm3588`.
 
-## Tools (11 инструментов)
+## Tools (11 tools)
 
-### База знаний
-| Tool | Описание |
-|------|----------|
-| `save_knowledge(title, content, category, tags)` | Сохранить знание |
-| `search_knowledge(query, category, limit)` | Семантический поиск |
-| `get_knowledge(entry_id)` | Получить запись по ID |
-| `update_knowledge(entry_id, content, append)` | Обновить запись |
-| `list_categories()` | Список категорий |
-| `list_knowledge(category, limit)` | Записи в категории |
+### Knowledge Base
+| Tool | Description |
+|------|-------------|
+| `save_knowledge(title, content, category, tags)` | Save knowledge |
+| `search_knowledge(query, category, limit)` | Semantic search |
+| `get_knowledge(entry_id)` | Get entry by ID |
+| `update_knowledge(entry_id, content, append)` | Update entry |
+| `list_categories()` | List categories |
+| `list_knowledge(category, limit)` | List entries in category |
 
-### Логирование
-| Tool | Описание |
-|------|----------|
-| `log_change(what, why, details, files_changed, commands_run)` | Залогировать изменение |
-| `log_solution(problem, solution, steps)` | Сохранить решение проблемы |
-| `get_changelog(limit)` | История изменений |
+### Logging
+| Tool | Description |
+|------|-------------|
+| `log_change(what, why, details, files_changed, commands_run)` | Log a change |
+| `log_solution(problem, solution, steps)` | Save problem solution |
+| `get_changelog(limit)` | Get change history |
 
-### Документирование
-| Tool | Описание |
-|------|----------|
-| `document_config(service_name, config_path, description)` | Задокументировать конфиг |
-| `create_howto(title, steps, category, tags)` | Создать пошаговый гайд |
+### Documentation
+| Tool | Description |
+|------|-------------|
+| `document_config(service_name, config_path, description)` | Document config |
+| `create_howto(title, steps, category, tags)` | Create step-by-step guide |
 
-## Resources (14 ресурсов)
+## Resources (14 resources)
 
-### Документация (статика)
-| URI | Описание |
-|-----|----------|
-| `docs://hardware` | Спецификации CM3588 |
-| `docs://npu` | Документация NPU/RKNN |
+### Documentation (static)
+| URI | Description |
+|-----|-------------|
+| `docs://hardware` | CM3588 specifications |
+| `docs://npu` | NPU/RKNN documentation |
 | `docs://wyoming` | Wyoming Protocol |
-| `docs://llm` | LLM на RK3588 |
+| `docs://llm` | LLM on RK3588 |
 
-### Live статус (с устройства через SSH)
-| URI | Описание |
-|-----|----------|
-| `live://system` | Uptime, память, диск, температура |
-| `live://services` | Docker контейнеры |
-| `live://npu` | Статус NPU, драйвер, загрузка |
-| `live://network` | IP адреса, порты |
-| `live://voice-pipeline` | Whisper/Piper/Wake статус |
-| `live://llm` | LLM процессы и модели |
+### Live Status (from device via SSH)
+| URI | Description |
+|-----|-------------|
+| `live://system` | Uptime, memory, disk, temperature |
+| `live://services` | Docker containers |
+| `live://npu` | NPU status, driver, load |
+| `live://network` | IP addresses, ports |
+| `live://voice-pipeline` | Whisper/Piper/Wake status |
+| `live://llm` | LLM processes and models |
 
-### Конфиги (с устройства)
-| URI | Описание |
-|-----|----------|
+### Configs (from device)
+| URI | Description |
+|-----|-------------|
 | `config://whisper` | Docker inspect whisper |
 | `config://piper` | Docker inspect piper |
-| `config://docker-compose` | docker-compose.yml файлы |
+| `config://docker-compose` | docker-compose.yml files |
 
-### Логи (с устройства)
-| URI | Описание |
-|-----|----------|
-| `logs://whisper` | Логи Whisper (50 строк) |
-| `logs://piper` | Логи Piper |
-| `logs://system` | Системные логи |
+### Logs (from device)
+| URI | Description |
+|-----|-------------|
+| `logs://whisper` | Whisper logs (50 lines) |
+| `logs://piper` | Piper logs |
+| `logs://system` | System logs |
 
-## Prompts (7 шаблонов)
+## Prompts (7 templates)
 
-| Prompt | Описание |
-|--------|----------|
-| `setup_microphone` | Настройка USB микрофона |
-| `setup_camera` | Настройка камеры |
-| `setup_llm_npu` | Запуск LLM на NPU |
-| `optimize_model_npu` | Оптимизация модели для RKNN |
-| `troubleshoot_voice` | Диагностика голосового пайплайна |
-| `after_change` | Что делать после изменений |
-| `document_current_state` | Документирование текущего состояния |
+| Prompt | Description |
+|--------|-------------|
+| `setup_microphone` | USB microphone setup |
+| `setup_camera` | Camera setup |
+| `setup_llm_npu` | Run LLM on NPU |
+| `optimize_model_npu` | Optimize model for RKNN |
+| `troubleshoot_voice` | Voice pipeline diagnostics |
+| `after_change` | What to do after changes |
+| `document_current_state` | Document current state |
 
-## Категории знаний
+## Knowledge Categories
 
-- `hardware` - железо, спецификации
-- `voice-pipeline` - голосовой пайплайн (Whisper, Piper, Wake Word)
-- `npu` - NPU, RKNN, ускорение моделей
-- `docker` - Docker контейнеры и конфиги
-- `troubleshooting` - решения проблем
+- `hardware` - hardware, specifications
+- `voice-pipeline` - voice pipeline (Whisper, Piper, Wake Word)
+- `npu` - NPU, RKNN, model acceleration
+- `docker` - Docker containers and configs
+- `troubleshooting` - problem solutions
 
-## Пример использования
+## Usage Example
 
-После подключения MCP сервера Claude Code автоматически:
+After connecting MCP server, Claude Code automatically:
 
-1. **Ищет в базе знаний перед работой:**
+1. **Searches knowledge base before work:**
    ```
-   > Как настроить микрофон?
-   [Claude использует search_knowledge("микрофон")]
-   ```
-
-2. **Логирует изменения:**
-   ```
-   > Поменял конфиг whisper
-   [Claude использует log_change()]
+   > How to setup microphone?
+   [Claude uses search_knowledge("microphone")]
    ```
 
-3. **Проверяет live статус:**
+2. **Logs changes:**
    ```
-   > Что с голосовым пайплайном?
-   [Claude читает live://voice-pipeline]
-   ```
-
-4. **Сохраняет решения:**
-   ```
-   > Исправил проблему с NPU
-   [Claude использует log_solution()]
+   > Changed whisper config
+   [Claude uses log_change()]
    ```
 
-## Разработка
+3. **Checks live status:**
+   ```
+   > What's the voice pipeline status?
+   [Claude reads live://voice-pipeline]
+   ```
+
+4. **Saves solutions:**
+   ```
+   > Fixed NPU issue
+   [Claude uses log_solution()]
+   ```
+
+## Development
 
 ```bash
-# Запуск сервера напрямую
+# Run server directly
 python -m mcp_cm3588.server
 
-# Линтинг
+# Linting
 ruff check src/
 ruff format src/
 
-# Тесты
+# Tests
 pytest
 ```
+
+## License
+
+MIT License - see [LICENSE](LICENSE)
