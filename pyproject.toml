@@ -1,0 +1,34 @@
+[project]
+name = "mcp-cm3588"
+version = "0.1.0"
+description = "MCP Server for CM3588 NAS Kit knowledge base and SSH operations"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "paramiko>=3.4.0",
+    "qdrant-client>=1.12.0",
+    "sentence-transformers>=3.3.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+mcp-cm3588 = "mcp_cm3588.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_cm3588"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
